@@ -4,13 +4,13 @@ import os
 from typing import List
 from app.models.pdf_model import PDFContent, PDFResponse, ConversionRequest, ConversionResponse
 from app.services.pdf_service import PDFService
-from app.services.pptx_service import PowerPointService
+from app.services.pptx_service_single import PowerPointServiceSingle
 
 router = APIRouter(prefix="/pdf", tags=["PDF Operations"])
 
 # Initialize services
 pdf_service = PDFService()
-pptx_service = PowerPointService()
+pptx_service = PowerPointServiceSingle()
 
 @router.post("/create", response_model=PDFResponse)
 async def create_pdf(pdf_content: PDFContent):
