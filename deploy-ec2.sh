@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # EC2 Deployment Script for PDF to PowerPoint API using Docker
-# Optimized for Amazon Linux (uses yum package manager)
+# Optimized for Amazon Linux 2023 (uses dnf package manager)
 
 set -e
 
@@ -16,7 +16,7 @@ IMAGE_TAR="${IMAGE_NAME}-${IMAGE_TAG}.tar"
 
 # Check if running on Amazon Linux
 if ! grep -q "Amazon Linux" /etc/os-release 2>/dev/null; then
-    echo "⚠️  Warning: This script is optimized for Amazon Linux. You're running on:"
+    echo "⚠️  Warning: This script is optimized for Amazon Linux 2023. You're running on:"
     cat /etc/os-release | grep PRETTY_NAME || echo "Unknown OS"
     echo "Continuing anyway..."
 fi
@@ -26,10 +26,10 @@ install_docker() {
     echo "🐳 Installing Docker..."
     
     # Update system packages
-    sudo yum update -y
+    sudo dnf update -y
     
     # Install Docker
-    sudo yum install -y docker
+    sudo dnf install -y docker
     
     # Start and enable Docker service
     sudo systemctl start docker

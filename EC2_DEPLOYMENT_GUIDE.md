@@ -5,7 +5,7 @@ This guide explains how to deploy your PDF to PowerPoint API on Amazon EC2 using
 ## Prerequisites
 
 - Local machine with Docker installed
-- EC2 instance running Amazon Linux 2
+- EC2 instance running Amazon Linux 2023
 - SSH access to your EC2 instance
 - Security group configured to allow inbound traffic on port 8000
 
@@ -56,8 +56,8 @@ chmod +x deploy-ec2.sh
 
 ### build.sh
 
-- Builds Docker image using Amazon Linux 2 base
-- Installs all system dependencies using `yum` (Amazon Linux package manager)
+- Builds Docker image using Amazon Linux 2023 base
+- Installs all system dependencies using `dnf` (Amazon Linux 2023 package manager)
 - Installs Python dependencies from requirements.txt
 - Creates a portable tar file for easy transfer
 

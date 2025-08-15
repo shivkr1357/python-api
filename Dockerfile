@@ -1,7 +1,7 @@
 # Dockerfile for PDF to PowerPoint API
-# Optimized for Amazon Linux (uses yum package manager)
+# Optimized for Amazon Linux 2023 (uses dnf package manager)
 
-FROM amazonlinux:2
+FROM amazonlinux:2023
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1
@@ -9,16 +9,15 @@ ENV PYTHONDONTWRITEBYTECODE=1
 ENV PORT=8000
 ENV HOST=0.0.0.0
 
-# Install system dependencies using yum (Amazon Linux package manager)
-RUN yum update -y && \
-    yum install -y \
-        python3 \
-        python3-pip \
-        python3-devel \
+# Install system dependencies using dnf (Amazon Linux 2023 package manager)
+RUN dnf update -y && \
+    dnf install -y \
+        python3.11 \
+        python3.11-pip \
+        python3.11-devel \
         gcc \
         gcc-c++ \
         make \
-        curl \
         wget \
         tar \
         gzip \
@@ -30,15 +29,17 @@ RUN yum update -y && \
         freetype-devel \
         # PDF processing dependencies
         poppler-utils \
-        tesseract \
-        tesseract-langpack-eng \
         # OpenCV dependencies
         atlas-devel \
         blas-devel \
         lapack-devel \
         # Cleanup
-    && yum clean all \
-    && rm -rf /var/cache/yum
+    && dnf clean all \
+    && rm -rf /var/cache/dnf
+
+# Create symlink for python3 and pip3 to point to python3.11
+RUN ln -sf /usr/bin/python3.11 /usr/bin/python3 && \
+    ln -sf /usr/bin/pip3.11 /usr/bin/pip3
 
 # Set working directory
 WORKDIR /app
