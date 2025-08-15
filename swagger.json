@@ -1,0 +1,890 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "PDF to PowerPoint Converter API",
+    "description": "A FastAPI application for creating PDF files and converting them to PowerPoint presentations using MVC architecture.\n\n## Features\n- **PDF Creation**: Generate PDF files from text content with custom styling\n- **PDF to PowerPoint Conversion**: Convert PDF files to PowerPoint presentations\n- **File Management**: Upload, download, list, and delete files\n- **RESTful API**: Clean and intuitive API endpoints\n\n## Authentication\nThis API currently does not require authentication for demonstration purposes.\nIn production, consider implementing JWT tokens or API keys.\n\n## Rate Limiting\nNo rate limiting is currently implemented. Consider adding rate limiting for production use.",
+    "version": "1.0.0",
+    "contact": {
+      "name": "API Support",
+      "email": "support@example.com"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8000",
+      "description": "Development server"
+    },
+    {
+      "url": "https://api.example.com",
+      "description": "Production server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "PDF Operations",
+      "description": "Operations for creating and managing PDF files"
+    },
+    {
+      "name": "Conversion Operations",
+      "description": "Operations for converting PDFs to PowerPoint presentations"
+    },
+    {
+      "name": "System",
+      "description": "System health and information endpoints"
+    }
+  ],
+  "paths": {
+    "/": {
+      "get": {
+        "tags": ["System"],
+        "summary": "Get API Information",
+        "description": "Returns basic information about the API",
+        "responses": {
+          "200": {
+            "description": "API information retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "PDF to PowerPoint Converter API"
+                    },
+                    "version": {
+                      "type": "string",
+                      "example": "1.0.0"
+                    },
+                    "status": {
+                      "type": "string",
+                      "example": "running"
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2025-08-15T12:54:42.002577"
+                    },
+                    "endpoints": {
+                      "type": "object",
+                      "properties": {
+                        "docs": {
+                          "type": "string",
+                          "example": "/docs"
+                        },
+                        "redoc": {
+                          "type": "string",
+                          "example": "/redoc"
+                        },
+                        "pdf_operations": {
+                          "type": "string",
+                          "example": "/pdf"
+                        },
+                        "conversion_operations": {
+                          "type": "string",
+                          "example": "/convert"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "tags": ["System"],
+        "summary": "Health Check",
+        "description": "Check if the API is running and healthy",
+        "responses": {
+          "200": {
+            "description": "API is healthy",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "healthy"
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2025-08-15T12:54:42.002577"
+                    },
+                    "service": {
+                      "type": "string",
+                      "example": "PDF to PowerPoint Converter API"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/pdf/create": {
+      "post": {
+        "tags": ["PDF Operations"],
+        "summary": "Create PDF",
+        "description": "Create a PDF file from provided content",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PDFContent"
+              },
+              "examples": {
+                "basic": {
+                  "summary": "Basic PDF Creation",
+                  "value": {
+                    "title": "Sample Document",
+                    "content": "This is a sample document created via the API.",
+                    "author": "John Doe",
+                    "subject": "Sample Subject",
+                    "keywords": ["sample", "document", "pdf"]
+                  }
+                },
+                "detailed": {
+                  "summary": "Detailed PDF with Metadata",
+                  "value": {
+                    "title": "Technical Report",
+                    "content": "This is a comprehensive technical report.\n\nIt includes multiple paragraphs and detailed information.\n\nKey Features:\n• Professional formatting\n• Custom styling\n• Metadata support",
+                    "author": "Technical Writer",
+                    "subject": "Technical Documentation",
+                    "keywords": ["technical", "report", "documentation", "api"]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "PDF created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PDFResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/pdf/list": {
+      "get": {
+        "tags": ["PDF Operations"],
+        "summary": "List PDF Files",
+        "description": "Get a list of all available PDF files",
+        "responses": {
+          "200": {
+            "description": "PDF files retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "pdfs": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/PDFFileInfo"
+                      }
+                    },
+                    "count": {
+                      "type": "integer",
+                      "example": 2
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/pdf/download/{filename}": {
+      "get": {
+        "tags": ["PDF Operations"],
+        "summary": "Download PDF",
+        "description": "Download a PDF file by filename",
+        "parameters": [
+          {
+            "name": "filename",
+            "in": "path",
+            "required": true,
+            "description": "Name of the PDF file to download",
+            "schema": {
+              "type": "string",
+              "example": "Sample_Document_20250815_125355.pdf"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "PDF file downloaded successfully",
+            "content": {
+              "application/pdf": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "PDF file not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/pdf/info/{filename}": {
+      "get": {
+        "tags": ["PDF Operations"],
+        "summary": "Get PDF Information",
+        "description": "Get detailed information about a specific PDF file",
+        "parameters": [
+          {
+            "name": "filename",
+            "in": "path",
+            "required": true,
+            "description": "Name of the PDF file",
+            "schema": {
+              "type": "string",
+              "example": "Sample_Document_20250815_125355.pdf"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "PDF information retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "info": {
+                      "$ref": "#/components/schemas/PDFFileInfo"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "PDF file not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/pdf/delete/{filename}": {
+      "delete": {
+        "tags": ["PDF Operations"],
+        "summary": "Delete PDF",
+        "description": "Delete a PDF file by filename",
+        "parameters": [
+          {
+            "name": "filename",
+            "in": "path",
+            "required": true,
+            "description": "Name of the PDF file to delete",
+            "schema": {
+              "type": "string",
+              "example": "Sample_Document_20250815_125355.pdf"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "PDF file deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "PDF file Sample_Document_20250815_125355.pdf deleted successfully"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "PDF file not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/convert/pdf-to-pptx": {
+      "post": {
+        "tags": ["Conversion Operations"],
+        "summary": "Convert PDF to PowerPoint",
+        "description": "Convert a PDF file to PowerPoint presentation",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConversionRequest"
+              },
+              "examples": {
+                "basic": {
+                  "summary": "Basic Conversion",
+                  "value": {
+                    "pdf_path": "outputs/pdfs/sample_document.pdf",
+                    "output_name": "converted_presentation",
+                    "include_images": true
+                  }
+                },
+                "custom_name": {
+                  "summary": "Custom Output Name",
+                  "value": {
+                    "pdf_path": "outputs/pdfs/report.pdf",
+                    "output_name": "my_presentation",
+                    "include_images": false
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "PDF converted to PowerPoint successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - PDF file not found or validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/convert/list-pptx": {
+      "get": {
+        "tags": ["Conversion Operations"],
+        "summary": "List PowerPoint Files",
+        "description": "Get a list of all available PowerPoint files",
+        "responses": {
+          "200": {
+            "description": "PowerPoint files retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "pptx_files": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/PPTXFileInfo"
+                      }
+                    },
+                    "count": {
+                      "type": "integer",
+                      "example": 3
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/convert/download-pptx/{filename}": {
+      "get": {
+        "tags": ["Conversion Operations"],
+        "summary": "Download PowerPoint",
+        "description": "Download a PowerPoint file by filename",
+        "parameters": [
+          {
+            "name": "filename",
+            "in": "path",
+            "required": true,
+            "description": "Name of the PowerPoint file to download",
+            "schema": {
+              "type": "string",
+              "example": "converted_presentation.pptx"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "PowerPoint file downloaded successfully",
+            "content": {
+              "application/vnd.openxmlformats-officedocument.presentationml.presentation": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "PowerPoint file not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/convert/delete-pptx/{filename}": {
+      "delete": {
+        "tags": ["Conversion Operations"],
+        "summary": "Delete PowerPoint",
+        "description": "Delete a PowerPoint file by filename",
+        "parameters": [
+          {
+            "name": "filename",
+            "in": "path",
+            "required": true,
+            "description": "Name of the PowerPoint file to delete",
+            "schema": {
+              "type": "string",
+              "example": "converted_presentation.pptx"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "PowerPoint file deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "PowerPoint file converted_presentation.pptx deleted successfully"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "PowerPoint file not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/convert/create-sample-pptx": {
+      "post": {
+        "tags": ["Conversion Operations"],
+        "summary": "Create Sample PowerPoint",
+        "description": "Create a sample PowerPoint presentation for testing",
+        "responses": {
+          "200": {
+            "description": "Sample PowerPoint created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Sample PowerPoint created: Sample_Presentation_20250815_125408.pptx"
+                    },
+                    "file_path": {
+                      "type": "string",
+                      "example": "outputs/pptx/Sample_Presentation_20250815_125408.pptx"
+                    },
+                    "filename": {
+                      "type": "string",
+                      "example": "Sample_Presentation_20250815_125408.pptx"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "PDFContent": {
+        "type": "object",
+        "required": ["title", "content"],
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "Title of the PDF document",
+            "example": "Sample Document",
+            "maxLength": 200
+          },
+          "content": {
+            "type": "string",
+            "description": "Main content of the PDF",
+            "example": "This is the main content of the document..."
+          },
+          "author": {
+            "type": "string",
+            "description": "Author of the document",
+            "example": "John Doe",
+            "maxLength": 100
+          },
+          "subject": {
+            "type": "string",
+            "description": "Subject of the document",
+            "example": "Sample Subject",
+            "maxLength": 200
+          },
+          "keywords": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Keywords for the document",
+            "example": ["sample", "document", "pdf"],
+            "maxItems": 10
+          }
+        }
+      },
+      "PDFResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "message": {
+            "type": "string",
+            "example": "PDF created successfully: Sample_Document_20250815_125355.pdf"
+          },
+          "pdf_path": {
+            "type": "string",
+            "example": "outputs/pdfs/Sample_Document_20250815_125355.pdf"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2025-08-15T12:53:55.873833"
+          }
+        }
+      },
+      "ConversionRequest": {
+        "type": "object",
+        "required": ["pdf_path"],
+        "properties": {
+          "pdf_path": {
+            "type": "string",
+            "description": "Path to the PDF file to convert",
+            "example": "outputs/pdfs/sample_document.pdf"
+          },
+          "output_name": {
+            "type": "string",
+            "description": "Name for the output PowerPoint file",
+            "example": "converted_presentation",
+            "maxLength": 100
+          },
+          "include_images": {
+            "type": "boolean",
+            "description": "Whether to include images in conversion",
+            "example": true,
+            "default": true
+          }
+        }
+      },
+      "ConversionResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "message": {
+            "type": "string",
+            "example": "PowerPoint created successfully: converted_presentation.pptx"
+          },
+          "pptx_path": {
+            "type": "string",
+            "example": "outputs/pptx/converted_presentation.pptx"
+          },
+          "converted_at": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2025-08-15T12:54:00.191290"
+          }
+        }
+      },
+      "PDFFileInfo": {
+        "type": "object",
+        "properties": {
+          "filename": {
+            "type": "string",
+            "example": "Sample_Document_20250815_125355.pdf"
+          },
+          "size_bytes": {
+            "type": "integer",
+            "example": 1853
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2025-08-15T12:53:55.873778"
+          },
+          "modified_at": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2025-08-15T12:53:55.873778"
+          }
+        }
+      },
+      "PPTXFileInfo": {
+        "type": "object",
+        "properties": {
+          "filename": {
+            "type": "string",
+            "example": "converted_presentation.pptx"
+          },
+          "size_bytes": {
+            "type": "integer",
+            "example": 30955
+          },
+          "created_at": {
+            "type": "number",
+            "format": "double",
+            "example": 1755242640.1912327
+          },
+          "modified_at": {
+            "type": "number",
+            "format": "double",
+            "example": 1755242640.1912327
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "example": "PDF file not found"
+          },
+          "message": {
+            "type": "string",
+            "example": "The requested PDF file could not be found"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2025-08-15T12:54:42.002577"
+          },
+          "path": {
+            "type": "string",
+            "example": "/pdf/download/nonexistent.pdf"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-Key",
+        "description": "API key for authentication (not currently required)"
+      }
+    }
+  },
+  "security": [
+    {
+      "ApiKeyAuth": []
+    }
+  ],
+  "externalDocs": {
+    "description": "Find more info about FastAPI",
+    "url": "https://fastapi.tiangolo.com/"
+  }
+}

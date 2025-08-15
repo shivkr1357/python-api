@@ -1,0 +1,711 @@
+{
+	"info": {
+		"_postman_id": "pdf-to-powerpoint-api-collection",
+		"name": "PDF to PowerPoint Converter API",
+		"description": "A comprehensive Postman collection for the PDF to PowerPoint Converter API. This collection includes all endpoints for creating PDFs, converting them to PowerPoint presentations, and managing files.\n\n## Features\n- PDF Creation with custom content and metadata\n- PDF to PowerPoint conversion\n- File management (list, download, delete)\n- Sample data and examples for all endpoints\n- Environment variables for easy configuration\n\n## Setup Instructions\n1. Import this collection into Postman\n2. Import the environment file (PDF_to_PowerPoint_API.postman_environment.json)\n3. Start the API server: `python -m app.main`\n4. Select the environment and start testing!\n\n## Quick Start\n1. Run the health check to verify the API is running\n2. Create a PDF using the 'Create PDF' request\n3. List PDFs to see your created files\n4. Convert a PDF to PowerPoint\n5. Download the generated files",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "pdf-to-powerpoint-api"
+	},
+	"item": [
+		{
+			"name": "System",
+			"item": [
+				{
+					"name": "Get API Information",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								""
+							]
+						},
+						"description": "Get basic information about the API including version, status, and available endpoints."
+					},
+					"response": [
+						{
+							"name": "Success Response",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										""
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "content-type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n  \"message\": \"PDF to PowerPoint Converter API\",\n  \"version\": \"1.0.0\",\n  \"status\": \"running\",\n  \"timestamp\": \"2025-08-15T12:54:42.002577\",\n  \"endpoints\": {\n    \"docs\": \"/docs\",\n    \"redoc\": \"/redoc\",\n    \"pdf_operations\": \"/pdf\",\n    \"conversion_operations\": \"/convert\"\n  }\n}"
+						}
+					]
+				},
+				{
+					"name": "Health Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/health",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"health"
+							]
+						},
+						"description": "Check if the API is running and healthy. This is a good first test to verify the server is up."
+					},
+					"response": [
+						{
+							"name": "Healthy Response",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/health",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"health"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "content-type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n  \"status\": \"healthy\",\n  \"timestamp\": \"2025-08-15T12:54:42.002577\",\n  \"service\": \"PDF to PowerPoint Converter API\"\n}"
+						}
+					]
+				}
+			],
+			"description": "System endpoints for API information and health checks."
+		},
+		{
+			"name": "PDF Operations",
+			"item": [
+				{
+					"name": "Create PDF",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Sample Document\",\n  \"content\": \"This is a sample document created via the API.\\n\\nThis document demonstrates the PDF creation capabilities of our FastAPI application.\\n\\nKey Features:\\n• Professional formatting\\n• Custom styling\\n• Metadata support\\n• Easy integration\\n\\nThe document includes multiple paragraphs to test the formatting capabilities.\",\n  \"author\": \"API User\",\n  \"subject\": \"Sample Subject\",\n  \"keywords\": [\"sample\", \"document\", \"pdf\", \"api\"]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/pdf/create",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"pdf",
+								"create"
+							]
+						},
+						"description": "Create a PDF file from provided content. The PDF will be generated with professional formatting and saved to the outputs directory.\n\n**Required Fields:**\n- `title`: Title of the PDF document\n- `content`: Main content of the PDF\n\n**Optional Fields:**\n- `author`: Author of the document\n- `subject`: Subject of the document\n- `keywords`: Array of keywords for the document"
+					},
+					"response": [
+						{
+							"name": "Success Response",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"title\": \"Sample Document\",\n  \"content\": \"This is a sample document created via the API.\",\n  \"author\": \"API User\",\n  \"subject\": \"Sample Subject\",\n  \"keywords\": [\"sample\", \"document\", \"pdf\"]\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/pdf/create",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"pdf",
+										"create"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "content-type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n  \"success\": true,\n  \"message\": \"PDF created successfully: Sample_Document_20250815_125355.pdf\",\n  \"pdf_path\": \"outputs/pdfs/Sample_Document_20250815_125355.pdf\",\n  \"created_at\": \"2025-08-15T12:53:55.873833\"\n}"
+						}
+					]
+				},
+				{
+					"name": "List PDFs",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/pdf/list",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"pdf",
+								"list"
+							]
+						},
+						"description": "Get a list of all available PDF files in the outputs directory. This shows filename, size, creation date, and modification date for each PDF."
+					},
+					"response": [
+						{
+							"name": "Success Response",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/pdf/list",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"pdf",
+										"list"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "content-type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n  \"success\": true,\n  \"pdfs\": [\n    {\n      \"filename\": \"Sample_Document_20250815_125355.pdf\",\n      \"size_bytes\": 1853,\n      \"created_at\": \"2025-08-15T12:53:55.873778\",\n      \"modified_at\": \"2025-08-15T12:53:55.873778\"\n    }\n  ],\n  \"count\": 1\n}"
+						}
+					]
+				},
+				{
+					"name": "Get PDF Info",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/pdf/info/{{pdf_filename}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"pdf",
+								"info",
+								"{{pdf_filename}}"
+							]
+						},
+						"description": "Get detailed information about a specific PDF file including filename, size, creation date, and modification date.\n\n**Note:** Replace `{{pdf_filename}}` with the actual filename from the list PDFs response."
+					},
+					"response": [
+						{
+							"name": "Success Response",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/pdf/info/Sample_Document_20250815_125355.pdf",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"pdf",
+										"info",
+										"Sample_Document_20250815_125355.pdf"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "content-type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n  \"success\": true,\n  \"info\": {\n    \"filename\": \"Sample_Document_20250815_125355.pdf\",\n    \"size_bytes\": 1853,\n    \"created_at\": \"2025-08-15T12:53:55.873778\",\n    \"modified_at\": \"2025-08-15T12:53:55.873778\"\n  }\n}"
+						}
+					]
+				},
+				{
+					"name": "Download PDF",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/pdf/download/{{pdf_filename}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"pdf",
+								"download",
+								"{{pdf_filename}}"
+							]
+						},
+						"description": "Download a PDF file by filename. The file will be returned as a binary response.\n\n**Note:** Replace `{{pdf_filename}}` with the actual filename from the list PDFs response."
+					},
+					"response": [
+						{
+							"name": "Success Response",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/pdf/download/Sample_Document_20250815_125355.pdf",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"pdf",
+										"download",
+										"Sample_Document_20250815_125355.pdf"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "binary",
+							"header": [
+								{
+									"key": "content-type",
+									"value": "application/pdf"
+								},
+								{
+									"key": "content-disposition",
+									"value": "attachment; filename=\"Sample_Document_20250815_125355.pdf\""
+								}
+							],
+							"cookie": [],
+							"body": "[Binary PDF content]"
+						}
+					]
+				},
+				{
+					"name": "Delete PDF",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/pdf/delete/{{pdf_filename}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"pdf",
+								"delete",
+								"{{pdf_filename}}"
+							]
+						},
+						"description": "Delete a PDF file by filename. This action cannot be undone.\n\n**Note:** Replace `{{pdf_filename}}` with the actual filename from the list PDFs response."
+					},
+					"response": [
+						{
+							"name": "Success Response",
+							"originalRequest": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/pdf/delete/Sample_Document_20250815_125355.pdf",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"pdf",
+										"delete",
+										"Sample_Document_20250815_125355.pdf"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "content-type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n  \"success\": true,\n  \"message\": \"PDF file Sample_Document_20250815_125355.pdf deleted successfully\"\n}"
+						}
+					]
+				}
+			],
+			"description": "Operations for creating and managing PDF files."
+		},
+		{
+			"name": "Conversion Operations",
+			"item": [
+				{
+					"name": "Convert PDF to PowerPoint",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"pdf_path\": \"{{pdf_path}}\",\n  \"output_name\": \"converted_presentation\",\n  \"include_images\": true\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/convert/pdf-to-pptx",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"convert",
+								"pdf-to-pptx"
+							]
+						},
+						"description": "Convert a PDF file to PowerPoint presentation. The PowerPoint will be created with slides based on the PDF content.\n\n**Required Fields:**\n- `pdf_path`: Path to the PDF file to convert (use the path from Create PDF response)\n\n**Optional Fields:**\n- `output_name`: Name for the output PowerPoint file\n- `include_images`: Whether to include images in conversion (default: true)"
+					},
+					"response": [
+						{
+							"name": "Success Response",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"pdf_path\": \"outputs/pdfs/Sample_Document_20250815_125355.pdf\",\n  \"output_name\": \"converted_presentation\",\n  \"include_images\": true\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/convert/pdf-to-pptx",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"convert",
+										"pdf-to-pptx"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "content-type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n  \"success\": true,\n  \"message\": \"PowerPoint created successfully: converted_presentation.pptx\",\n  \"pptx_path\": \"outputs/pptx/converted_presentation.pptx\",\n  \"converted_at\": \"2025-08-15T12:54:00.191290\"\n}"
+						}
+					]
+				},
+				{
+					"name": "List PowerPoint Files",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/convert/list-pptx",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"convert",
+								"list-pptx"
+							]
+						},
+						"description": "Get a list of all available PowerPoint files in the outputs directory. This shows filename, size, creation date, and modification date for each PowerPoint file."
+					},
+					"response": [
+						{
+							"name": "Success Response",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/convert/list-pptx",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"convert",
+										"list-pptx"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "content-type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n  \"success\": true,\n  \"pptx_files\": [\n    {\n      \"filename\": \"converted_presentation.pptx\",\n      \"size_bytes\": 30955,\n      \"created_at\": 1755242640.1912327,\n      \"modified_at\": 1755242640.1912327\n    }\n  ],\n  \"count\": 1\n}"
+						}
+					]
+				},
+				{
+					"name": "Download PowerPoint",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/convert/download-pptx/{{pptx_filename}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"convert",
+								"download-pptx",
+								"{{pptx_filename}}"
+							]
+						},
+						"description": "Download a PowerPoint file by filename. The file will be returned as a binary response.\n\n**Note:** Replace `{{pptx_filename}}` with the actual filename from the list PowerPoint files response."
+					},
+					"response": [
+						{
+							"name": "Success Response",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/convert/download-pptx/converted_presentation.pptx",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"convert",
+										"download-pptx",
+										"converted_presentation.pptx"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "binary",
+							"header": [
+								{
+									"key": "content-type",
+									"value": "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+								},
+								{
+									"key": "content-disposition",
+									"value": "attachment; filename=\"converted_presentation.pptx\""
+								}
+							],
+							"cookie": [],
+							"body": "[Binary PowerPoint content]"
+						}
+					]
+				},
+				{
+					"name": "Delete PowerPoint",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/convert/delete-pptx/{{pptx_filename}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"convert",
+								"delete-pptx",
+								"{{pptx_filename}}"
+							]
+						},
+						"description": "Delete a PowerPoint file by filename. This action cannot be undone.\n\n**Note:** Replace `{{pptx_filename}}` with the actual filename from the list PowerPoint files response."
+					},
+					"response": [
+						{
+							"name": "Success Response",
+							"originalRequest": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/convert/delete-pptx/converted_presentation.pptx",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"convert",
+										"delete-pptx",
+										"converted_presentation.pptx"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "content-type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n  \"success\": true,\n  \"message\": \"PowerPoint file converted_presentation.pptx deleted successfully\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Create Sample PowerPoint",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/convert/create-sample-pptx",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"convert",
+								"create-sample-pptx"
+							]
+						},
+						"description": "Create a sample PowerPoint presentation for testing purposes. This creates a presentation with sample content to demonstrate the PowerPoint creation capabilities."
+					},
+					"response": [
+						{
+							"name": "Success Response",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/convert/create-sample-pptx",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"convert",
+										"create-sample-pptx"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "content-type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n  \"success\": true,\n  \"message\": \"Sample PowerPoint created: Sample_Presentation_20250815_125408.pptx\",\n  \"file_path\": \"outputs/pptx/Sample_Presentation_20250815_125408.pptx\",\n  \"filename\": \"Sample_Presentation_20250815_125408.pptx\"\n}"
+						}
+					]
+				}
+			],
+			"description": "Operations for converting PDFs to PowerPoint presentations and managing PowerPoint files."
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Pre-request script to set up environment variables",
+					"if (pm.environment.get('base_url') === null || pm.environment.get('base_url') === '') {",
+					"    pm.environment.set('base_url', 'http://localhost:8000');",
+					"}"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000",
+			"type": "string"
+		},
+		{
+			"key": "pdf_filename",
+			"value": "Sample_Document_20250815_125355.pdf",
+			"type": "string"
+		},
+		{
+			"key": "pptx_filename",
+			"value": "converted_presentation.pptx",
+			"type": "string"
+		},
+		{
+			"key": "pdf_path",
+			"value": "outputs/pdfs/Sample_Document_20250815_125355.pdf",
+			"type": "string"
+		}
+	]
+}

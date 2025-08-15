@@ -1,0 +1,26 @@
+version: "3.8"
+
+services:
+  pdf-to-pptx-api:
+    image: pdf-to-pptx-api:latest
+    container_name: pdf-to-pptx-api-container
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      - /opt/pdf-api/outputs:/app/outputs
+    environment:
+      - PORT=8000
+      - HOST=0.0.0.0
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - pdf-api-network
+
+networks:
+  pdf-api-network:
+    driver: bridge
