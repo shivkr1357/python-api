@@ -298,6 +298,17 @@ RUN apt-get update \
         libffi-dev \
         libssl-dev \
         curl \
+        libmupdf-dev \
+        libjpeg-dev \
+        libpng-dev \
+        libfreetype6-dev \
+        liblcms2-dev \
+        libopenjp2-7-dev \
+        libtiff5-dev \
+        libwebp-dev \
+        libharfbuzz-dev \
+        libfribidi-dev \
+        libxcb1-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Python dependencies

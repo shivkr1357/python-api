@@ -4,4 +4,5 @@ python-multipart
 PyPDF2
 python-pptx
 Pillow
+PyMuPDF
 reportlab
