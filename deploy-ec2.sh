@@ -1,151 +1,163 @@
 #!/bin/bash
 
-# EC2 Deployment Script for PDF to PowerPoint API using Docker
-# Optimized for Amazon Linux 2023 (uses dnf package manager)
+# Simple EC2 deployment script for PDF Unlock API
+# This script automates the deployment process
 
 set -e
 
-echo "🚀 Starting EC2 deployment process..."
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+# Function to print colored output
+print_status() {
+    echo -e "${GREEN}[INFO]${NC} $1"
+}
+
+print_warning() {
+    echo -e "${YELLOW}[WARNING]${NC} $1"
+}
+
+print_error() {
+    echo -e "${RED}[ERROR]${NC} $1"
+}
+
+print_header() {
+    echo -e "${BLUE}================================${NC}"
+    echo -e "${BLUE} $1${NC}"
+    echo -e "${BLUE}================================${NC}"
+}
 
 # Configuration
-IMAGE_NAME="pdf-to-pptx-api"
-IMAGE_TAG="latest"
-CONTAINER_NAME="pdf-to-pptx-api-container"
-PORT=8000
-IMAGE_TAR="${IMAGE_NAME}-${IMAGE_TAG}.tar"
+APP_NAME="pdf-unlock-api"
+BUILD_DIR="build"
+REMOTE_USER="ubuntu"
+REMOTE_DIR="/tmp"
 
-# Check if running on Amazon Linux
-if ! grep -q "Amazon Linux" /etc/os-release 2>/dev/null; then
-    echo "⚠️  Warning: This script is optimized for Amazon Linux 2023. You're running on:"
-    cat /etc/os-release | grep PRETTY_NAME || echo "Unknown OS"
-    echo "Continuing anyway..."
-fi
-
-# Function to install Docker if not present
-install_docker() {
-    echo "🐳 Installing Docker..."
-    
-    # Update system packages
-    sudo dnf update -y
-    
-    # Install Docker
-    sudo dnf install -y docker
-    
-    # Start and enable Docker service
-    sudo systemctl start docker
-    sudo systemctl enable docker
-    
-    # Add current user to docker group
-    sudo usermod -a -G docker $USER
-    
-    echo "✅ Docker installed successfully!"
-    echo "🔄 Please log out and log back in for group changes to take effect, or run: newgrp docker"
-}
-
-# Function to install Docker Compose if not present
-install_docker_compose() {
-    echo "🐙 Installing Docker Compose..."
-    
-    # Install Docker Compose
-    sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-    sudo chmod +x /usr/local/bin/docker-compose
-    
-    # Create symlink for easier access
-    sudo ln -sf /usr/local/bin/docker-compose /usr/bin/docker-compose
-    
-    echo "✅ Docker Compose installed successfully!"
-}
-
-# Check if Docker is installed
-if ! command -v docker &> /dev/null; then
-    echo "🐳 Docker not found. Installing..."
-    install_docker
-    exit 0  # Exit to allow user to log back in
-fi
-
-# Check if Docker is running
-if ! sudo systemctl is-active --quiet docker; then
-    echo "🚀 Starting Docker service..."
-    sudo systemctl start docker
-fi
-
-# Check if Docker Compose is installed
-if ! command -v docker-compose &> /dev/null; then
-    echo "🐙 Docker Compose not found. Installing..."
-    install_docker_compose
-fi
-
-# Check if image tar file exists
-if [ ! -f "$IMAGE_TAR" ]; then
-    echo "❌ Image tar file not found: $IMAGE_TAR"
-    echo "📋 Please ensure you have run build.sh first and transferred the tar file to this EC2 instance."
+# Check if build directory exists
+if [ ! -d "$BUILD_DIR" ]; then
+    print_error "Build directory not found. Please run build.sh first."
     exit 1
 fi
 
-# Load the Docker image
-echo "📥 Loading Docker image from tar file..."
-sudo docker load -i "$IMAGE_TAR"
+# Get EC2 IP address
+print_header "EC2 Deployment Configuration"
+read -p "Enter your EC2 instance IP address: " EC2_IP
+read -p "Enter your SSH key path (e.g., ~/.ssh/my-key.pem): " SSH_KEY_PATH
 
-# Stop and remove existing container if it exists
-if sudo docker ps -a --format "table {{.Names}}" | grep -q "$CONTAINER_NAME"; then
-    echo "🔄 Stopping existing container..."
-    sudo docker stop "$CONTAINER_NAME" || true
-    sudo docker rm "$CONTAINER_NAME" || true
+# Validate inputs
+if [ -z "$EC2_IP" ]; then
+    print_error "EC2 IP address is required"
+    exit 1
 fi
 
-# Create output directories
-echo "📁 Creating output directories..."
-sudo mkdir -p /opt/pdf-api/outputs/pdfs
-sudo mkdir -p /opt/pdf-api/outputs/pptx
-sudo chown -R $USER:$USER /opt/pdf-api/outputs
+if [ -z "$SSH_KEY_PATH" ]; then
+    print_error "SSH key path is required"
+    exit 1
+fi
 
-# Run the container
-echo "🚀 Starting the application container..."
-sudo docker run -d \
-    --name "$CONTAINER_NAME" \
-    --restart unless-stopped \
-    -p "$PORT:$PORT" \
-    -v /opt/pdf-api/outputs:/app/outputs \
-    -e PORT="$PORT" \
-    -e HOST="0.0.0.0" \
-    "$IMAGE_NAME:$IMAGE_TAG"
+# Expand tilde in SSH key path
+SSH_KEY_PATH=$(eval echo $SSH_KEY_PATH)
 
-# Wait for container to start
-echo "⏳ Waiting for container to start..."
-sleep 10
+if [ ! -f "$SSH_KEY_PATH" ]; then
+    print_error "SSH key file not found: $SSH_KEY_PATH"
+    exit 1
+fi
 
-# Check container status
-if sudo docker ps --format "table {{.Names}}\t{{.Status}}" | grep -q "$CONTAINER_NAME"; then
-    echo "✅ Container started successfully!"
-    echo "📋 Container status:"
-    sudo docker ps --filter "name=$CONTAINER_NAME"
+print_status "EC2 IP: $EC2_IP"
+print_status "SSH Key: $SSH_KEY_PATH"
+
+# Test SSH connection
+print_header "Testing SSH Connection"
+print_status "Testing connection to EC2 instance..."
+if ! ssh -i "$SSH_KEY_PATH" -o ConnectTimeout=10 -o StrictHostKeyChecking=no "$REMOTE_USER@$EC2_IP" "echo 'SSH connection successful'" 2>/dev/null; then
+    print_error "Failed to connect to EC2 instance. Please check:"
+    echo "  1. EC2 instance is running"
+    echo "  2. Security group allows SSH (port 22)"
+    echo "  3. SSH key is correct"
+    echo "  4. Instance is accessible from your network"
+    exit 1
+fi
+
+print_status "SSH connection successful!"
+
+# Upload build files
+print_header "Uploading Build Files"
+print_status "Uploading build directory to EC2..."
+if ! scp -i "$SSH_KEY_PATH" -r "$BUILD_DIR" "$REMOTE_USER@$EC2_IP:$REMOTE_DIR/"; then
+    print_error "Failed to upload build files"
+    exit 1
+fi
+
+print_status "Build files uploaded successfully!"
+
+# Deploy application
+print_header "Deploying Application"
+print_status "Running deployment script on EC2..."
+ssh -i "$SSH_KEY_PATH" "$REMOTE_USER@$EC2_IP" << 'EOF'
+    echo "🚀 Starting deployment on EC2..."
     
-    echo "🌐 Application is running on:"
-    echo "   Local: http://localhost:$PORT"
-    echo "   Network: http://$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4 2>/dev/null || echo 'YOUR_EC2_PUBLIC_IP'):$PORT"
+    # Check if running as root
+    if [[ $EUID -ne 0 ]]; then
+        echo "❌ This script must be run as root"
+        echo "Please run: sudo /tmp/build/deploy.sh"
+        exit 1
+    fi
     
-    echo "📚 API Documentation:"
-    echo "   Swagger UI: http://$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4 2>/dev/null || echo 'YOUR_EC2_PUBLIC_IP'):$PORT/docs"
-    
-    echo "🔍 Health Check:"
-    echo "   Health endpoint: http://$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4 2>/dev/null || echo 'YOUR_EC2_PUBLIC_IP'):$PORT/health"
-    
-    # Show logs
-    echo "📜 Recent container logs:"
-    sudo docker logs --tail 20 "$CONTAINER_NAME"
-    
+    # Run deployment script
+    cd /tmp/build
+    chmod +x deploy.sh
+    ./deploy.sh
+EOF
+
+if [ $? -eq 0 ]; then
+    print_status "Deployment completed successfully!"
 else
-    echo "❌ Container failed to start!"
-    echo "📜 Container logs:"
-    sudo docker logs "$CONTAINER_NAME" || true
-    exit 1
+    print_warning "Deployment script completed with warnings. Please check the output above."
 fi
 
+# Test deployment
+print_header "Testing Deployment"
+print_status "Testing application health..."
+sleep 5  # Wait for services to start
+
+if curl -f "http://$EC2_IP/health" > /dev/null 2>&1; then
+    print_status "✅ Application is healthy!"
+    echo ""
+    echo "🎉 Deployment successful! Your PDF Unlock API is now running."
+    echo ""
+    echo "📱 Access your API:"
+    echo "   - Main API: http://$EC2_IP"
+    echo "   - API Docs: http://$EC2_IP/docs"
+    echo "   - Health Check: http://$EC2_IP/health"
+    echo ""
+    echo "🔧 Useful commands:"
+    echo "   - SSH to instance: ssh -i $SSH_KEY_PATH $REMOTE_USER@$EC2_IP"
+    echo "   - Check service status: sudo systemctl status pdf-api"
+    echo "   - View logs: sudo journalctl -u pdf-api -f"
+    echo "   - Check nginx: sudo systemctl status nginx"
+    echo ""
+    echo "📊 Monitoring:"
+    echo "   - Health check: /usr/local/bin/health-check.sh"
+    echo "   - Status page: http://$EC2_IP/status.html"
+else
+    print_warning "⚠️  Application health check failed. Please check the deployment manually:"
+    echo "   SSH to your instance: ssh -i $SSH_KEY_PATH $REMOTE_USER@$EC2_IP"
+    echo "   Check service status: sudo systemctl status pdf-api"
+    echo "   View logs: sudo journalctl -u pdf-api -f"
+fi
+
+# Cleanup
+print_header "Cleanup"
+print_status "Cleaning up temporary files on EC2..."
+ssh -i "$SSH_KEY_PATH" "$REMOTE_USER@$EC2_IP" "sudo rm -rf $REMOTE_DIR/$BUILD_DIR"
+
+print_status "Deployment process completed!"
 echo ""
-echo "🎯 Deployment complete!"
-echo "📋 Useful commands:"
-echo "   View logs: sudo docker logs -f $CONTAINER_NAME"
-echo "   Stop app: sudo docker stop $CONTAINER_NAME"
-echo "   Start app: sudo docker start $CONTAINER_NAME"
-echo "   Restart app: sudo docker restart $CONTAINER_NAME"
-echo "   Remove app: sudo docker rm -f $CONTAINER_NAME"
+echo "📖 For more information, see:"
+echo "   - DEPLOYMENT_GUIDE.md"
+echo "   - /var/pdf-api/WELCOME.md (on EC2)"
+echo "   - /var/pdf-api/BUILD_SUMMARY.md (on EC2)"

@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# Build script for PDF Unlock API
-# This script prepares the application for deployment
+# Build script for PDF Unlock API (Amazon Linux version)
+# This script prepares the application for deployment on Amazon Linux
 
 set -e
 
-echo "🚀 Starting build process for PDF Unlock API..."
+echo "🚀 Starting build process for PDF Unlock API (Amazon Linux)..."
 
 # Colors for output
 RED='\033[0;31m'
@@ -189,15 +189,15 @@ server {
 }
 EOF
 
-# Create deployment script
-print_status "Creating deployment script..."
-cat > "$BUILD_DIR/deploy.sh" << 'EOF'
+# Create Amazon Linux deployment script
+print_status "Creating Amazon Linux deployment script..."
+cat > "$BUILD_DIR/deploy-amazon-linux.sh" << 'EOF'
 #!/bin/bash
 
-# Deployment script for PDF Unlock API on EC2
+# Deployment script for PDF Unlock API on Amazon Linux
 set -e
 
-echo "🚀 Deploying PDF Unlock API..."
+echo "🚀 Deploying PDF Unlock API on Amazon Linux..."
 
 # Configuration
 APP_NAME="pdf-api"
@@ -228,6 +228,14 @@ if [[ $EUID -ne 0 ]]; then
    print_error "This script must be run as root"
    exit 1
 fi
+
+# Update system packages
+print_status "Updating system packages..."
+yum update -y
+
+# Install required packages
+print_status "Installing required packages..."
+yum install -y python3 python3-pip python3-devel nginx curl wget git
 
 # Create service user and group
 print_status "Creating service user and group..."
@@ -277,9 +285,8 @@ systemctl enable pdf-api.service
 
 # Install nginx configuration
 print_status "Installing nginx configuration..."
-cp nginx.conf /etc/nginx/sites-available/pdf-api
-ln -sf /etc/nginx/sites-available/pdf-api /etc/nginx/sites-enabled/
-rm -f /etc/nginx/sites-enabled/default
+cp nginx.conf /etc/nginx/conf.d/pdf-api.conf
+rm -f /etc/nginx/conf.d/default.conf
 
 # Test nginx configuration
 print_status "Testing nginx configuration..."
@@ -447,7 +454,7 @@ cat > "$BUILD_DIR/deploy-config.json" << 'EOF'
   "version": "1.0.0",
   "deployment": {
     "type": "ec2",
-    "platform": "ubuntu",
+    "platform": "amazon-linux",
     "python_version": "3.11",
     "port": 8000,
     "nginx_port": 80
@@ -461,7 +468,7 @@ cat > "$BUILD_DIR/deploy-config.json" << 'EOF'
     },
     "nginx": {
       "config_file": "nginx.conf",
-      "sites_enabled": "pdf-api"
+      "conf_dir": "/etc/nginx/conf.d"
     }
   },
   "directories": {
@@ -479,14 +486,14 @@ EOF
 
 # Make scripts executable
 print_status "Making scripts executable..."
-chmod +x "$BUILD_DIR/deploy.sh"
+chmod +x "$BUILD_DIR/deploy-amazon-linux.sh"
 
 # Create build summary
 print_status "Creating build summary..."
 cat > "$BUILD_DIR/BUILD_SUMMARY.md" << 'EOF'
-# Build Summary
+# Build Summary (Amazon Linux)
 
-This build contains the following files for deploying PDF Unlock API to EC2:
+This build contains the following files for deploying PDF Unlock API to Amazon Linux EC2:
 
 ## Core Application Files
 - `app/` - Application source code
@@ -495,7 +502,7 @@ This build contains the following files for deploying PDF Unlock API to EC2:
 - `gunicorn.conf.py` - Production server configuration
 
 ## Deployment Files
-- `deploy.sh` - Main deployment script
+- `deploy-amazon-linux.sh` - Main deployment script for Amazon Linux
 - `pdf-api.service` - Systemd service file
 - `nginx.conf` - Nginx reverse proxy configuration
 - `deploy-config.json` - Deployment configuration
@@ -507,8 +514,8 @@ This build contains the following files for deploying PDF Unlock API to EC2:
 - `.env.template` - Environment variables template
 
 ## Next Steps
-1. Copy the build directory to your EC2 instance
-2. Run `sudo ./deploy.sh` to deploy the application
+1. Copy the build directory to your Amazon Linux EC2 instance
+2. Run `sudo ./deploy-amazon-linux.sh` to deploy the application
 3. Or use Docker: `docker-compose up -d`
 
 ## Service Management
@@ -521,13 +528,19 @@ This build contains the following files for deploying PDF Unlock API to EC2:
 - Start: `sudo systemctl start nginx`
 - Reload: `sudo systemctl reload nginx`
 - Status: `sudo systemctl status nginx`
+
+## Amazon Linux Specific Notes
+- Uses yum package manager instead of apt
+- Nginx config goes to /etc/nginx/conf.d/ instead of sites-available
+- Python 3 is available by default
+- Systemd is available for service management
 EOF
 
 print_status "Build completed successfully!"
 print_status "Build directory: $BUILD_DIR"
 print_status "Next steps:"
-echo "  1. Copy the build directory to your EC2 instance"
-echo "  2. Run: sudo ./deploy.sh"
+echo "  1. Copy the build directory to your Amazon Linux EC2 instance"
+echo "  2. Run: sudo ./deploy-amazon-linux.sh"
 echo "  3. Or use Docker: docker-compose up -d"
 echo ""
 print_status "Build summary created: $BUILD_DIR/BUILD_SUMMARY.md"

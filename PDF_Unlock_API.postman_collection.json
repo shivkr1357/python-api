@@ -1,0 +1,557 @@
+{
+	"info": {
+		"_postman_id": "pdf-unlock-api-complete",
+		"name": "PDF Unlock API - Complete Collection",
+		"description": "Complete API collection for the PDF Unlock service. Includes all endpoints for unlocking password-protected PDFs, locking PDFs with passwords, downloading files, and debugging. This collection includes environment variables and automated workflows.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "pdf-unlock-complete"
+	},
+	"item": [
+		{
+			"name": "Health & Status",
+			"item": [
+				{
+					"name": "Root Endpoint",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								""
+							]
+						},
+						"description": "Get the root endpoint with API information, available endpoints, and workflow instructions."
+					},
+					"response": []
+				},
+				{
+					"name": "Health Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/health",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"health"
+							]
+						},
+						"description": "Check the health status of the API server."
+					},
+					"response": []
+				},
+				{
+					"name": "Debug Files",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/debug/files",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"debug",
+								"files"
+							]
+						},
+						"description": "Debug endpoint to see all stored files, file count, and uploads directory status."
+					},
+					"response": []
+				}
+			],
+			"description": "Basic health, status, and debug endpoints for the API."
+		},
+		{
+			"name": "PDF Unlock Workflow",
+			"item": [
+				{
+					"name": "Step 1: Unlock PDF (Automatic)",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "pdf_file",
+									"type": "file",
+									"src": [],
+									"description": "Password-protected PDF file to unlock automatically"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/unlock-pdf",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"unlock-pdf"
+							]
+						},
+						"description": "Step 1: Automatically unlock a password-protected PDF file. If successful, returns download link. If fails, returns original file with passwordRequired=true flag."
+					},
+					"response": []
+				},
+				{
+					"name": "Step 2: Unlock PDF with Password",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file_id",
+									"value": "{{file_id}}",
+									"type": "text",
+									"description": "File ID from previous unlock attempt (when passwordRequired=true)"
+								},
+								{
+									"key": "password",
+									"value": "{{password}}",
+									"type": "text",
+									"description": "Password to unlock the PDF"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/unlock-with-password",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"unlock-with-password"
+							]
+						},
+						"description": "Step 2: Unlock a PDF file using a provided password. Use this endpoint after automatic unlock fails (when passwordRequired=true)."
+					},
+					"response": []
+				},
+				{
+					"name": "Step 3: Download Unlocked PDF",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/download-pdf/{{file_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"download-pdf",
+								"{{file_id}}"
+							]
+						},
+						"description": "Step 3: Download the unlocked PDF file using the file_id from unlock-pdf or unlock-with-password endpoints."
+					},
+					"response": []
+				}
+			],
+			"description": "Complete workflow for unlocking password-protected PDFs: Automatic unlock → Password unlock (if needed) → Download."
+		},
+		{
+			"name": "PDF Lock",
+			"item": [
+				{
+					"name": "Lock PDF with Password",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "pdf_file",
+									"type": "file",
+									"src": [],
+									"description": "PDF file to password-protect"
+								},
+								{
+									"key": "password",
+									"value": "{{password}}",
+									"type": "text",
+									"description": "Password to protect the PDF"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/lock-pdf",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"lock-pdf"
+							]
+						},
+						"description": "Lock a PDF file with a password and get a download link for the password-protected PDF."
+					},
+					"response": []
+				}
+			],
+			"description": "PDF locking functionality to add password protection to PDF files."
+		},
+		{
+			"name": "PDF Compression",
+			"item": [
+				{
+					"name": "Compress PDF",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "pdf_file",
+									"type": "file",
+									"src": [],
+									"description": "PDF file to compress"
+								},
+								{
+									"key": "compression_level",
+									"value": "medium",
+									"type": "text",
+									"description": "Compression level: low, medium, high"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/compress-pdf",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"compress-pdf"
+							]
+						},
+						"description": "Compress a PDF file to reduce its size. Choose compression level: low (preserve quality), medium (balanced), or high (maximum compression)."
+					},
+					"response": []
+				}
+			],
+			"description": "PDF compression functionality to reduce file size while maintaining quality."
+		},
+		{
+			"name": "PDF Conversion",
+			"item": [
+				{
+					"name": "PDF to PowerPoint",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "pdf_file",
+									"type": "file",
+									"src": [],
+									"description": "PDF file to convert to PowerPoint"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/pdf-to-powerpoint",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"pdf-to-powerpoint"
+							]
+						},
+						"description": "Convert a PDF file to PowerPoint format. Each page of the PDF becomes a slide in the PowerPoint presentation."
+					},
+					"response": []
+				},
+				{
+					"name": "PowerPoint to PDF",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "pptx_file",
+									"type": "file",
+									"src": [],
+									"description": "PowerPoint file to convert to PDF"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/powerpoint-to-pdf",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"powerpoint-to-pdf"
+							]
+						},
+						"description": "Convert a PowerPoint file to PDF format. Each slide of the PowerPoint becomes a page in the PDF document."
+					},
+					"response": []
+				},
+				{
+					"name": "JPG to PDF",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "jpg_files",
+									"type": "file",
+									"src": [],
+									"description": "JPG image files to convert to PDF (can upload multiple files)"
+								},
+								{
+									"key": "page_orientation",
+									"value": "portrait",
+									"type": "text",
+									"description": "Page orientation: 'portrait' or 'landscape'"
+								},
+								{
+									"key": "page_size",
+									"value": "a4",
+									"type": "text",
+									"description": "Page size: 'a4', 'us_letter', or 'fit'"
+								},
+								{
+									"key": "margin",
+									"value": "no_margin",
+									"type": "text",
+									"description": "Margin: 'no_margin', 'small', or 'big'"
+								},
+								{
+									"key": "merge_all",
+									"value": "true",
+									"type": "text",
+									"description": "Merge all images into one PDF file: 'true' or 'false'"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/jpg-to-pdf",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"jpg-to-pdf"
+							]
+						},
+						"description": "Convert JPG images to PDF format with configurable options. Supports multiple files, page orientation, size, margins, and merging options."
+					},
+					"response": []
+				},
+				{
+					"name": "PDF to JPG",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "pdf_file",
+									"type": "file",
+									"src": [],
+									"description": "PDF file to convert to JPG"
+								},
+								{
+									"key": "page_number",
+									"value": "1",
+									"type": "text",
+									"description": "Page number to convert (default: 1)"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/pdf-to-jpg",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"pdf-to-jpg"
+							]
+						},
+						"description": "Convert a PDF page to JPG format. The JPG will have high quality and maintain the original page dimensions."
+					},
+					"response": []
+				}
+			],
+			"description": "PDF conversion functionality to transform PDFs, PowerPoint files, and JPG images between formats."
+		},
+		{
+			"name": "File Management",
+			"item": [
+				{
+					"name": "Download PDF",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/download-pdf/{{file_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"download-pdf",
+								"{{file_id}}"
+							]
+						},
+						"description": "Download any PDF file by its ID (from unlock-pdf, unlock-with-password, or lock-pdf endpoints)."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete PDF",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/download-pdf/{{file_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"download-pdf",
+								"{{file_id}}"
+							]
+						},
+						"description": "Delete a PDF file by its ID. This will remove the file from both memory and disk."
+					},
+					"response": []
+				}
+			],
+			"description": "File management operations for downloading and deleting PDF files."
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Pre-request script to set up any necessary variables",
+					"console.log('Making request to: ' + pm.request.url);",
+					"",
+					"// Set default values if not already set",
+					"if (!pm.environment.get('base_url')) {",
+					"    pm.environment.set('base_url', 'http://localhost:8000');",
+					"}",
+					"if (!pm.environment.get('password')) {",
+					"    pm.environment.set('password', 'test_password');",
+					"}"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Test script to handle responses and auto-save variables",
+					"pm.test('Status code is 200', function () {",
+					"    pm.response.to.have.status(200);",
+					"});",
+					"",
+					"// Parse response if it's JSON",
+					"try {",
+					"    const response = pm.response.json();",
+					"    ",
+					"    // Auto-save file_id if present",
+					"    if (response.file_id) {",
+					"        pm.environment.set('file_id', response.file_id);",
+					"        console.log('✅ Saved file_id: ' + response.file_id);",
+					"    }",
+					"    ",
+					"    // Auto-save download_url if present",
+					"    if (response.download_url) {",
+					"        pm.environment.set('download_url', response.download_url);",
+					"        console.log('✅ Saved download_url: ' + response.download_url);",
+					"    }",
+					"    ",
+					"    // Auto-save filename if present",
+					"    if (response.filename) {",
+					"        pm.environment.set('filename', response.filename);",
+					"        console.log('✅ Saved filename: ' + response.filename);",
+					"    }",
+					"    ",
+					"    // Log success/failure status",
+					"    if (response.success !== undefined) {",
+					"        console.log('📊 Success: ' + response.success);",
+					"    }",
+					"    ",
+					"    // Log password requirement",
+					"    if (response.passwordRequired !== undefined) {",
+					"        console.log('🔐 Password Required: ' + response.passwordRequired);",
+					"    }",
+					"    ",
+					"    // Log unlock method",
+					"    if (response.unlock_method) {",
+					"        console.log('🔓 Unlock Method: ' + response.unlock_method);",
+					"    }",
+					"    ",
+					"    // Log message",
+					"    if (response.message) {",
+					"        console.log('💬 Message: ' + response.message);",
+					"    }",
+					"    ",
+					"    // Log note if present",
+					"    if (response.note) {",
+					"        console.log('📝 Note: ' + response.note);",
+					"    }",
+					"    ",
+					"    // Log next step if present",
+					"    if (response.next_step) {",
+					"        console.log('➡️ Next Step: ' + response.next_step);",
+					"    }",
+					"    ",
+					"} catch (e) {",
+					"    console.log('Response is not JSON or empty');",
+					"}",
+					"",
+					"// Log full response for debugging",
+					"console.log('📄 Full Response: ' + pm.response.text());"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000",
+			"type": "string"
+		},
+		{
+			"key": "file_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "download_url",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "filename",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "password",
+			"value": "test_password",
+			"type": "string"
+		}
+	]
+}

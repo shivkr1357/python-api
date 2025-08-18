@@ -1,0 +1,114 @@
+--- app/utils/pdf_processor.py (original)
++++ app/utils/pdf_processor.py (fixed)
+@@ -887,35 +887,65 @@
+                 # Get image dimensions
+                 img_width, img_height = img.size
+                 
+-                # Determine page orientation and size
+-                if page_orientation == "landscape":
+-                    if img_width > img_height:
+-                        orientation = "landscape"
+-                    else:
+-                        orientation = "portrait"
+-                else: # portrait
+-                    if img_width > img_height:
+-                        orientation = "landscape"
+-                    else:
+-                        orientation = "portrait"
+-                
+-                # Set page size based on orientation and requested size
++                # Determine page size based on requested size and orientation
+                 if page_size == "a4":
+-                    if orientation == "landscape":
++                    if page_orientation == "landscape":
+                         pdf_width = 842
+                         pdf_height = 595
+-                    else:
++                    else:  # portrait
+                         pdf_width = 595
+                         pdf_height = 842
+                 elif page_size == "us_letter":
+-                    if orientation == "landscape":
+-                        pdf_width = 816
+-                        pdf_height = 1056
+-                    else:
+-                        pdf_width = 1056
+-                        pdf_height = 816
++                    if page_orientation == "landscape":
++                        pdf_width = 1056
++                        pdf_height = 816
++                    else:  # portrait
++                        pdf_width = 816
++                        pdf_height = 1056
+                 elif page_size == "fit":
+-                    pdf_width = img_width
+-                    pdf_height = img_height
++                    # Use image dimensions, but respect orientation
++                    if page_orientation == "landscape":
++                        if img_width > img_height:
++                            pdf_width = img_width
++                            pdf_height = img_height
++                        else:
++                            # Swap dimensions for landscape
++                            pdf_width = img_height
++                            pdf_height = img_width
++                    else:  # portrait
++                        if img_width > img_height:
++                            # Swap dimensions for portrait
++                            pdf_width = img_height
++                            pdf_height = img_width
++                        else:
++                            pdf_width = img_width
++                            pdf_height = img_height
++                
++                # Calculate margins
++                margin_size = 0
++                if margin == "small":
++                    margin_size = 20  # 20 points
++                elif margin == "big":
++                    margin_size = 50  # 50 points
++                # no_margin = 0
++                
++                # Calculate image placement area (page size minus margins)
++                image_width = pdf_width - (2 * margin_size)
++                image_height = pdf_height - (2 * margin_size)
+                 
+                 # Add a new page with the determined dimensions
+                 page = pdf_document.new_page(width=pdf_width, height=pdf_height)
+@@ -925,10 +955,35 @@
+                     temp_img_path = temp_img.name
+                 
+                 try:
+-                    # Insert image into PDF page
++                    # Calculate image placement to maintain aspect ratio
++                    img_aspect = img_width / img_height
++                    page_aspect = image_width / image_height
++                    
++                    if img_aspect > page_aspect:
++                        # Image is wider than page area, fit to width
++                        final_width = image_width
++                        final_height = image_width / img_aspect
++                        left = margin_size
++                        top = margin_size + (image_height - final_height) / 2
++                    else:
++                        # Image is taller than page area, fit to height
++                        final_height = image_height
++                        final_width = image_height * img_aspect
++                        top = margin_size
++                        left = margin_size + (image_width - final_width) / 2
++                    
++                    # Insert image into PDF page with calculated position and size
+                     page.insert_image(
+-                        fitz.Rect(0, 0, pdf_width, pdf_height),
+-                        filename=temp_img_path
++                        fitz.Rect(left, top, left + final_width, top + final_height),
++                        filename=temp_img_path
+                     )
+                     
+                     print(f"DEBUG: Added image {i+1} to PDF page {len(pdf_document)}")
++                    print(f"DEBUG: Page size: {pdf_width} x {pdf_height}, Image size: {final_width} x {final_height}")
++                    print(f"DEBUG: Image position: ({left}, {top}), Margin: {margin_size}")
++                    print(f"DEBUG: Page orientation: {page_orientation}, Page size: {page_size}")
+                     
+                 finally:
+                     # Clean up temporary image file
