@@ -50,10 +50,10 @@ mkdir -p "$BUILD_DIR/uploads"
 mkdir -p "$BUILD_DIR/logs"
 mkdir -p "$BUILD_DIR/config"
 
-# Create production configuration
-print_status "Creating production configuration..."
+# Create production configuration for Docker
+print_status "Creating production configuration for Docker..."
 cat > "$BUILD_DIR/config/production.py" << 'EOF'
-# Production configuration
+# Production configuration for Docker
 import os
 
 # Server settings
@@ -61,8 +61,8 @@ HOST = "0.0.0.0"
 PORT = int(os.getenv("PORT", 8000))
 WORKERS = int(os.getenv("WORKERS", 4))
 
-# File settings
-UPLOAD_DIR = "/var/pdf-api/uploads"
+# File settings - Use Docker container paths
+UPLOAD_DIR = "/app/uploads"
 MAX_FILE_SIZE = 50 * 1024 * 1024  # 50MB
 FILE_EXPIRY_HOURS = 24
 
@@ -71,18 +71,18 @@ CORS_ORIGINS = os.getenv("CORS_ORIGINS", "*").split(",")
 API_KEY_HEADER = os.getenv("API_KEY_HEADER", "X-API-Key")
 API_KEY = os.getenv("API_KEY", "")
 
-# Logging
+# Logging - Use Docker container paths
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
-LOG_FILE = "/var/pdf-api/logs/app.log"
+LOG_FILE = "/app/logs/app.log"
 
 # Database (if needed in future)
 DATABASE_URL = os.getenv("DATABASE_URL", "")
 EOF
 
-# Create gunicorn configuration
-print_status "Creating Gunicorn configuration..."
+# Create gunicorn configuration for Docker
+print_status "Creating Gunicorn configuration for Docker..."
 cat > "$BUILD_DIR/gunicorn.conf.py" << 'EOF'
-# Gunicorn configuration for production
+# Gunicorn configuration for Docker
 import multiprocessing
 import os
 
@@ -103,9 +103,9 @@ keepalive = 2
 max_requests = 1000
 max_requests_jitter = 50
 
-# Logging
-accesslog = "/var/pdf-api/logs/access.log"
-errorlog = "/var/pdf-api/logs/error.log"
+# Logging - Use Docker container paths
+accesslog = "/app/logs/access.log"
+errorlog = "/app/logs/error.log"
 loglevel = "info"
 access_log_format = '%(h)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s" "%(a)s"'
 
@@ -114,7 +114,7 @@ proc_name = "pdf-api"
 
 # Server mechanics
 daemon = False
-pidfile = "/var/pdf-api/pdf-api.pid"
+pidfile = "/app/pdf-api.pid"
 user = None
 group = None
 tmp_upload_dir = None
@@ -271,8 +271,8 @@ print_status "Use 'docker-compose down' to stop services"
 print_status "Use 'docker-compose up -d' to start services"
 EOF
 
-# Create Dockerfile
-print_status "Creating Dockerfile..."
+# Create Dockerfile for Docker deployment
+print_status "Creating Dockerfile for Docker deployment..."
 cat > "$BUILD_DIR/Dockerfile" << 'EOF'
 FROM python:3.11-slim
 
@@ -291,6 +291,7 @@ RUN apt-get update \
         g++ \
         libffi-dev \
         libssl-dev \
+        curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Python dependencies
@@ -301,8 +302,9 @@ RUN pip install gunicorn
 # Copy project
 COPY . .
 
-# Create necessary directories
-RUN mkdir -p uploads logs
+# Create necessary directories with proper permissions
+RUN mkdir -p uploads logs config \
+    && chmod 777 uploads logs
 
 # Create non-root user
 RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
