@@ -149,8 +149,8 @@ RestartSec=10
 WantedBy=multi-user.target
 EOF
 
-# Create nginx configuration
-print_status "Creating nginx configuration..."
+# Create nginx configuration for Amazon Linux
+print_status "Creating nginx configuration for Amazon Linux..."
 cat > "$BUILD_DIR/nginx.conf" << 'EOF'
 server {
     listen 80;
@@ -189,21 +189,15 @@ server {
 }
 EOF
 
-# Create deployment script
-print_status "Creating deployment script..."
+# Create deployment script for Docker
+print_status "Creating deployment script for Docker..."
 cat > "$BUILD_DIR/deploy.sh" << 'EOF'
 #!/bin/bash
 
-# Deployment script for PDF Unlock API on EC2
+# Deployment script for PDF Unlock API using Docker on Amazon Linux
 set -e
 
-echo "🚀 Deploying PDF Unlock API..."
-
-# Configuration
-APP_NAME="pdf-api"
-APP_DIR="/var/$APP_NAME"
-SERVICE_USER="$APP_NAME"
-SERVICE_GROUP="$APP_NAME"
+echo "🚀 Deploying PDF Unlock API using Docker..."
 
 # Colors for output
 RED='\033[0;31m'
@@ -223,82 +217,58 @@ print_error() {
     echo -e "${RED}[ERROR]${NC} $1"
 }
 
-# Check if running as root
-if [[ $EUID -ne 0 ]]; then
-   print_error "This script must be run as root"
-   exit 1
+# Check if Docker is installed
+if ! command -v docker &> /dev/null; then
+    print_error "Docker is not installed. Installing Docker..."
+    # Install Docker on Amazon Linux
+    sudo yum update -y
+    sudo yum install -y docker
+    sudo systemctl start docker
+    sudo systemctl enable docker
+    sudo usermod -a -G docker ec2-user
+    print_status "Docker installed and started. Please log out and back in, then run this script again."
+    exit 1
 fi
 
-# Create service user and group
-print_status "Creating service user and group..."
-if ! id "$SERVICE_USER" &>/dev/null; then
-    useradd -r -s /bin/false -d "$APP_DIR" "$SERVICE_USER"
-    print_status "Created user: $SERVICE_USER"
+# Check if Docker Compose is installed
+if ! command -v docker-compose &> /dev/null; then
+    print_error "Docker Compose is not installed. Installing Docker Compose..."
+    sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+    sudo chmod +x /usr/local/bin/docker-compose
+    print_status "Docker Compose installed."
+fi
+
+# Stop and remove existing containers
+print_status "Stopping existing containers..."
+docker-compose down --remove-orphans 2>/dev/null || true
+
+# Build and start containers
+print_status "Building and starting Docker containers..."
+docker-compose up -d --build
+
+# Wait for services to be ready
+print_status "Waiting for services to be ready..."
+sleep 10
+
+# Check container status
+print_status "Checking container status..."
+docker-compose ps
+
+# Test the application
+print_status "Testing application..."
+if curl -f http://localhost:8000/health > /dev/null 2>&1; then
+    print_status "✅ Application is running successfully!"
+    print_status "🌐 API is available at: http://localhost:8000"
+    print_status "📚 API docs at: http://localhost:8000/docs"
+    print_status "🔍 Health check at: http://localhost:8000/health"
 else
-    print_status "User $SERVICE_USER already exists"
+    print_warning "⚠️  Application might still be starting up. Please wait a moment and check again."
 fi
-
-# Create application directory
-print_status "Creating application directory..."
-mkdir -p "$APP_DIR"
-mkdir -p "$APP_DIR/uploads"
-mkdir -p "$APP_DIR/logs"
-mkdir -p "$APP_DIR/config"
-
-# Copy application files
-print_status "Copying application files..."
-cp -r app/ "$APP_DIR/"
-cp requirements.txt "$APP_DIR/"
-cp start_server.py "$APP_DIR/"
-cp gunicorn.conf.py "$APP_DIR/"
-cp -r config/ "$APP_DIR/"
-
-# Set permissions
-print_status "Setting permissions..."
-chown -R "$SERVICE_USER:$SERVICE_GROUP" "$APP_DIR"
-chmod -R 755 "$APP_DIR"
-chmod 777 "$APP_DIR/uploads"
-chmod 777 "$APP_DIR/logs"
-
-# Create virtual environment
-print_status "Creating virtual environment..."
-cd "$APP_DIR"
-python3 -m venv venv
-source venv/bin/activate
-pip install --upgrade pip
-pip install -r requirements.txt
-pip install gunicorn
-
-# Install systemd service
-print_status "Installing systemd service..."
-cp pdf-api.service /etc/systemd/system/
-systemctl daemon-reload
-systemctl enable pdf-api.service
-
-# Install nginx configuration
-print_status "Installing nginx configuration..."
-cp nginx.conf /etc/nginx/sites-available/pdf-api
-ln -sf /etc/nginx/sites-available/pdf-api /etc/nginx/sites-enabled/
-rm -f /etc/nginx/sites-enabled/default
-
-# Test nginx configuration
-print_status "Testing nginx configuration..."
-nginx -t
-
-# Start services
-print_status "Starting services..."
-systemctl start pdf-api.service
-systemctl restart nginx
-
-# Check service status
-print_status "Checking service status..."
-systemctl status pdf-api.service --no-pager
-systemctl status nginx --no-pager
 
 print_status "Deployment completed successfully!"
-print_status "Application is running on port 8000"
-print_status "Nginx is serving on port 80"
-print_status "Check logs with: journalctl -u pdf-api -f"
+print_status "Use 'docker-compose logs -f' to view logs"
+print_status "Use 'docker-compose down' to stop services"
+print_status "Use 'docker-compose up -d' to start services"
 EOF
 
 # Create Dockerfile
@@ -349,8 +319,8 @@ HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
 CMD ["gunicorn", "-c", "gunicorn.conf.py", "app.main:app"]
 EOF
 
-# Create docker-compose file
-print_status "Creating docker-compose file..."
+# Create docker-compose file for production
+print_status "Creating docker-compose file for production..."
 cat > "$BUILD_DIR/docker-compose.yml" << 'EOF'
 version: '3.8'
 
@@ -366,6 +336,11 @@ services:
       - PORT=8000
       - WORKERS=4
       - LOG_LEVEL=INFO
+      - CORS_ORIGINS=*
+      - API_KEY_HEADER=X-API-Key
+      - API_KEY=your-secret-api-key-here
+      - FILE_EXPIRY_HOURS=24
+      - MAX_FILE_SIZE=52428800
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
@@ -373,6 +348,8 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
+    networks:
+      - pdf-api-network
 
   nginx:
     image: nginx:alpine
@@ -384,6 +361,16 @@ services:
     depends_on:
       - pdf-api
     restart: unless-stopped
+    networks:
+      - pdf-api-network
+
+networks:
+  pdf-api-network:
+    driver: bridge
+
+volumes:
+  uploads:
+  logs:
 EOF
 
 # Create .dockerignore
@@ -481,12 +468,12 @@ EOF
 print_status "Making scripts executable..."
 chmod +x "$BUILD_DIR/deploy.sh"
 
-# Create build summary
-print_status "Creating build summary..."
+# Create build summary for Docker deployment
+print_status "Creating build summary for Docker deployment..."
 cat > "$BUILD_DIR/BUILD_SUMMARY.md" << 'EOF'
-# Build Summary
+# Build Summary - Docker Deployment
 
-This build contains the following files for deploying PDF Unlock API to EC2:
+This build contains the following files for deploying PDF Unlock API using Docker on Amazon Linux:
 
 ## Core Application Files
 - `app/` - Application source code
@@ -495,8 +482,7 @@ This build contains the following files for deploying PDF Unlock API to EC2:
 - `gunicorn.conf.py` - Production server configuration
 
 ## Deployment Files
-- `deploy.sh` - Main deployment script
-- `pdf-api.service` - Systemd service file
+- `deploy.sh` - Docker deployment script
 - `nginx.conf` - Nginx reverse proxy configuration
 - `deploy-config.json` - Deployment configuration
 
@@ -507,27 +493,33 @@ This build contains the following files for deploying PDF Unlock API to EC2:
 - `.env.template` - Environment variables template
 
 ## Next Steps
-1. Copy the build directory to your EC2 instance
-2. Run `sudo ./deploy.sh` to deploy the application
-3. Or use Docker: `docker-compose up -d`
+1. Copy the build directory to your Amazon Linux EC2 instance
+2. Run `./deploy.sh` to deploy using Docker
+3. Or manually: `docker-compose up -d`
 
-## Service Management
-- Start: `sudo systemctl start pdf-api`
-- Stop: `sudo systemctl stop pdf-api`
-- Status: `sudo systemctl status pdf-api`
-- Logs: `sudo journalctl -u pdf-api -f`
+## Docker Commands
+- Start: `docker-compose up -d`
+- Stop: `docker-compose down`
+- Logs: `docker-compose logs -f`
+- Status: `docker-compose ps`
+- Rebuild: `docker-compose up -d --build`
 
-## Nginx Management
-- Start: `sudo systemctl start nginx`
-- Reload: `sudo systemctl reload nginx`
-- Status: `sudo systemctl status nginx`
+## Application Access
+- API: http://localhost:8000
+- Docs: http://localhost:8000/docs
+- Health: http://localhost:8000/health
+- Nginx: http://localhost:80 (proxies to API)
+
+## Environment Variables
+- Edit `.env.template` and rename to `.env` for custom configuration
+- Or modify `docker-compose.yml` environment section
 EOF
 
 print_status "Build completed successfully!"
 print_status "Build directory: $BUILD_DIR"
 print_status "Next steps:"
-echo "  1. Copy the build directory to your EC2 instance"
-echo "  2. Run: sudo ./deploy.sh"
-echo "  3. Or use Docker: docker-compose up -d"
+echo "  1. Copy the build directory to your Amazon Linux EC2 instance"
+echo "  2. Run: ./deploy.sh (Docker deployment)"
+echo "  3. Or manually: docker-compose up -d"
 echo ""
 print_status "Build summary created: $BUILD_DIR/BUILD_SUMMARY.md"
