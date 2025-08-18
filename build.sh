@@ -35,7 +35,9 @@ fi
 # Create build directory
 BUILD_DIR="build"
 print_status "Creating build directory: $BUILD_DIR"
+print_status "Removing old build directory if it exists..."
 rm -rf "$BUILD_DIR"
+print_status "Creating fresh build directory..."
 mkdir -p "$BUILD_DIR"
 
 # Copy application files
@@ -242,9 +244,13 @@ fi
 print_status "Stopping existing containers..."
 docker-compose down --remove-orphans 2>/dev/null || true
 
-# Build and start containers
+# Clean up old images and containers
+print_status "Cleaning up old Docker resources..."
+docker system prune -f 2>/dev/null || true
+
+# Build and start containers with force rebuild
 print_status "Building and starting Docker containers..."
-docker-compose up -d --build
+docker-compose up -d --build --force-recreate
 
 # Wait for services to be ready
 print_status "Waiting for services to be ready..."
