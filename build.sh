@@ -330,8 +330,6 @@ EOF
 # Create docker-compose file for production
 print_status "Creating docker-compose file for production..."
 cat > "$BUILD_DIR/docker-compose.yml" << 'EOF'
-version: '3.8'
-
 services:
   pdf-api:
     build: .
@@ -365,7 +363,7 @@ services:
       - "80:80"
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf
-      - ./uploads:/var/pdf-api/uploads:ro
+      - ./uploads:/app/uploads:ro
     depends_on:
       - pdf-api
     restart: unless-stopped
