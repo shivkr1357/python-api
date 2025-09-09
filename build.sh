@@ -166,7 +166,7 @@ server {
     add_header Content-Security-Policy "default-src 'self' http: https: data: blob: 'unsafe-inline'" always;
 
     # File upload size limit
-    client_max_body_size 50M;
+    client_max_body_size 500M;
 
     # Proxy to FastAPI application
     location / {
