@@ -65,7 +65,7 @@ WORKERS = int(os.getenv("WORKERS", 4))
 
 # File settings - Use Docker container paths
 UPLOAD_DIR = "/app/uploads"
-MAX_FILE_SIZE = 50 * 1024 * 1024  # 50MB
+MAX_FILE_SIZE = 500 * 1024 * 1024  # 500MB
 FILE_EXPIRY_HOURS = 24
 
 # Security settings
@@ -357,7 +357,7 @@ services:
       - API_KEY_HEADER=X-API-Key
       - API_KEY=your-secret-api-key-here
       - FILE_EXPIRY_HOURS=24
-      - MAX_FILE_SIZE=52428800
+      - MAX_FILE_SIZE=524288000
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
@@ -440,7 +440,7 @@ CORS_ORIGINS=*
 API_KEY_HEADER=X-API-Key
 API_KEY=your-secret-api-key-here
 FILE_EXPIRY_HOURS=24
-MAX_FILE_SIZE=52428800
+MAX_FILE_SIZE=524288000
 EOF
 
 # Create deployment configuration
